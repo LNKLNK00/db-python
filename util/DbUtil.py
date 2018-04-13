@@ -21,7 +21,7 @@ class DbUtil(object):
 		try:
 			return pymysql.connect(host=Config.mysql_host,port=Config.mysql_port,user=Config.mysql_user,passwd=Config.mysql_passwd,db=Config.mysql_db,charset=Config.mysql_charset)        
 		except Exception as e:
-			error = '数据库连接异常! ERROR (%s): %s' %(e.args[0],e.args[1])    
+			error = '数据库连接异常! ERROR : %s' % (e)
 			self.LOG.error(error)    
 			return None
 
@@ -41,6 +41,7 @@ class DbUtil(object):
 			results = cursor.fetchall()
 			return results
 		except Exception as e:
-			error = '数据查询异常! ERROR (%s): %s' %(e.args[0],e.args[1]) 
+			error = '数据查询异常! ERROR : %s' % (e) 
 			self.LOG.error (error)
-		self.dbClose(db)
+		finally:
+			self.dbClose(db)

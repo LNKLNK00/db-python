@@ -1,25 +1,36 @@
 #!/usr/bin/python
 
-import pymysql
-import config.Config as Config
+import threading
+import time
 
-# 打开数据库连接
-db = pymysql.connect(host=Config.mysql_host,port=Config.mysql_port,user=Config.mysql_user,passwd=Config.mysql_passwd,db=Config.mysql_db,charset=Config.mysql_charset)
+exitFlag = 0
 
-# 使用 cursor() 方法创建一个游标对象 cursor
-cursor = db.cursor()
+class myThread (threading.Thread):
+    def __init__(self, threadID, name, counter):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.name = name
+        self.counter = counter
+    def run(self):
+        print ("开始线程：" + self.name)
+        print_time(self.name, self.counter, 5)
+        print ("退出线程：" + self.name)
 
-# SQL 查询语句
-sql = "select * from videos limit 0,10"
-try:
-   # 执行SQL语句
-   cursor.execute(sql)
-   # 获取所有记录列表
-   results = cursor.fetchall()
-   for row in results:
-      print (row)
-except:
-   print ("Error: unable to fetch data")
+def print_time(threadName, delay, counter):
+    while counter:
+        if exitFlag:
+            threadName.exit()
+        time.sleep(delay)
+        print ("%s: %s" % (threadName, time.ctime(time.time())))
+        counter -= 1
 
-# 关闭数据库连接
-db.close()
+# 创建新线程
+thread1 = myThread(1, "Thread-1", 1)
+thread2 = myThread(2, "Thread-2", 2)
+
+# 开启新线程
+thread1.start()
+thread2.start()
+thread1.join()
+thread2.join()
+print ("退出主线程")
