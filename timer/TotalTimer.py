@@ -16,13 +16,22 @@ def day():
 	LOG.info("汇总数据每日统计开始=============>")
 	db = dbUtil.getConnect()
 	try:
-		now = datetime.datetime.strptime('2018-02-12', '%Y-%m-%d')
 		cursor = db.cursor()
-		# sql = '''SELECT DATE_FORMAT(NOW(),'%y-%m-%d %H:%i:%S')'''
-		# cursor.execute(sql)
-		# now = cursor.fetchone()
-		for i in range(60):
+		sql = '''SELECT DATE_FORMAT(NOW(),'%Y-%m-%d %H')'''
+		cursor.execute(sql)
+		now_str = cursor.fetchone()[0]
+		now = datetime.datetime.strptime(now_str, '%Y-%m-%d %H')
+
+		count = 1
+		if now_str[11:13] == '00':
+			now = (now + datetime.timedelta(days=-2))
+			count = 2
+		else:
+			now = (now + datetime.timedelta(days=-1))
+
+		for i in range(count):
 			now = (now + datetime.timedelta(days=1))
+
 			sql = '''SELECT COUNT(*) FROM log_view WHERE DATE_FORMAT(create_time, '%%y-%%m-%%d') 
 			= DATE_FORMAT('%s', '%%y-%%m-%%d')''' % (now.strftime('%Y-%m-%d'))
 			cursor.execute(sql)
@@ -76,59 +85,55 @@ def hour():
 	LOG.info("汇总数据小时统计开始=============>")
 	db = dbUtil.getConnect()
 	try:
-		now = datetime.datetime.strptime('2018-02-12', '%Y-%m-%d')
 		cursor = db.cursor()
-		# sql = '''SELECT DATE_FORMAT(NOW(),'%y-%m-%d %H:%i:%S')'''
-		# cursor.execute(sql)
-		# now = cursor.fetchone()
-		for i in range(60):
-			now = (now + datetime.timedelta(days=1))
-			for j in range(24):
-				hour = ''
-				if j < 10 :
-					hour = '0' + str(j)
-				else:
-					hour = str(j)
+		sql = '''SELECT DATE_FORMAT(NOW(),'%Y-%m-%d %H')'''
+		cursor.execute(sql)
+		now_str = cursor.fetchone()[0]
+		now = datetime.datetime.strptime(now_str, '%Y-%m-%d %H')
+		now = (now + datetime.timedelta(hours=-2))
+		for i in range(2):
+			now = (now + datetime.timedelta(hours=1))
 
-				sql = '''SELECT COUNT(*) FROM log_view WHERE DATE_FORMAT(create_time, '%%y-%%m-%%d %%H') 
-				= DATE_FORMAT('%s', '%%y-%%m-%%d %%H')''' % (now.strftime('%Y-%m-%d ') + hour)
+			sql = '''SELECT COUNT(*) FROM log_view WHERE DATE_FORMAT(create_time, '%%y-%%m-%%d %%H') 
+			= DATE_FORMAT('%s', '%%y-%%m-%%d %%H')''' % (now.strftime('%Y-%m-%d %H'))
+			cursor.execute(sql)
+			pv = cursor.fetchone()
+
+			sql = '''SELECT COUNT(*) from (SELECT DISTINCT ip_address FROM log_view WHERE DATE_FORMAT(create_time, '%%y-%%m-%%d %%H') 
+			= DATE_FORMAT('%s', '%%y-%%m-%%d %%H')) t''' % (now.strftime('%Y-%m-%d %H'))
+			cursor.execute(sql)
+			uv = cursor.fetchone()
+
+			sql = '''SELECT COUNT(*) FROM log_ad_click WHERE DATE_FORMAT(create_time, '%%y-%%m-%%d %%H') 
+			= DATE_FORMAT('%s', '%%y-%%m-%%d %%H')''' % (now.strftime('%Y-%m-%d %H'))
+			cursor.execute(sql)
+			ad_click_count = cursor.fetchone()
+
+			sql = '''SELECT COUNT(*) from (SELECT DISTINCT ip_address FROM log_ad_click WHERE DATE_FORMAT(create_time, '%%y-%%m-%%d %%H') 
+			= DATE_FORMAT('%s', '%%y-%%m-%%d %%H')) t''' % (now.strftime('%Y-%m-%d %H'))
+			cursor.execute(sql)
+			ad_click_user = cursor.fetchone()
+
+			sql = '''SELECT COUNT(*) FROM customer_info WHERE DATE_FORMAT(create_time, '%%y-%%m-%%d %%H') 
+			= DATE_FORMAT('%s', '%%y-%%m-%%d %%H')''' % (now.strftime('%Y-%m-%d %H'))
+			cursor.execute(sql)
+			register_count = cursor.fetchone()
+
+			sql = '''SELECT * FROM report_hour_total WHERE DATE_FORMAT(report_hour, '%%y-%%m-%%d %%H') 
+			= DATE_FORMAT('%s', '%%y-%%m-%%d %%H')''' % (now.strftime('%Y-%m-%d %H'))
+			cursor.execute(sql)
+			report = cursor.fetchone()
+
+			if report is None :
+				sql = '''INSERT INTO `report_hour_total` (`pv`, `uv`, `ad_click_count`, `ad_click_user`, `register_count`, `report_hour`) 
+				VALUES (%s, %s, %s, %s, %s, '%s')''' % (pv[0], uv[0], ad_click_count[0], ad_click_user[0], 
+				register_count[0], now.strftime('%Y-%m-%d %H'))
 				cursor.execute(sql)
-				pv = cursor.fetchone()
-
-				sql = '''SELECT COUNT(*) from (SELECT DISTINCT ip_address FROM log_view WHERE DATE_FORMAT(create_time, '%%y-%%m-%%d %%H') 
-				= DATE_FORMAT('%s', '%%y-%%m-%%d %%H')) t''' % (now.strftime('%Y-%m-%d ') + hour)
+			else:
+				sql = '''UPDATE `report_hour_total` SET pv = %s, uv = %s, ad_click_count = %s, ad_click_user = %s, register_count = %s 
+				WHERE DATE_FORMAT(report_hour, '%%y-%%m-%%d %%H') = DATE_FORMAT('%s', '%%y-%%m-%%d %%H')''' % (pv[0], uv[0], 
+				ad_click_count[0], ad_click_user[0], register_count[0], now.strftime('%Y-%m-%d %H'))
 				cursor.execute(sql)
-				uv = cursor.fetchone()
-
-				sql = '''SELECT COUNT(*) FROM log_ad_click WHERE DATE_FORMAT(create_time, '%%y-%%m-%%d %%H') 
-				= DATE_FORMAT('%s', '%%y-%%m-%%d %%H')''' % (now.strftime('%Y-%m-%d ') + hour)
-				cursor.execute(sql)
-				ad_click_count = cursor.fetchone()
-
-				sql = '''SELECT COUNT(*) from (SELECT DISTINCT ip_address FROM log_ad_click WHERE DATE_FORMAT(create_time, '%%y-%%m-%%d %%H') 
-				= DATE_FORMAT('%s', '%%y-%%m-%%d %%H')) t''' % (now.strftime('%Y-%m-%d ') + hour)
-				cursor.execute(sql)
-				ad_click_user = cursor.fetchone()
-
-				sql = '''SELECT COUNT(*) FROM customer_info WHERE DATE_FORMAT(create_time, '%%y-%%m-%%d %%H') 
-				= DATE_FORMAT('%s', '%%y-%%m-%%d %%H')''' % (now.strftime('%Y-%m-%d ') + hour)
-				cursor.execute(sql)
-				register_count = cursor.fetchone()
-
-				sql = '''SELECT * FROM report_hour_total WHERE DATE_FORMAT(report_hour, '%%y-%%m-%%d %%H') 
-				= DATE_FORMAT('%s', '%%y-%%m-%%d %%H')''' % (now.strftime('%Y-%m-%d ') + hour)
-				cursor.execute(sql)
-				report = cursor.fetchone()
-
-				if report is None :
-					sql = '''INSERT INTO `report_hour_total` (`pv`, `uv`, `ad_click_count`, `ad_click_user`, `register_count`, `report_hour`) 
-					VALUES (%s, %s, %s, %s, %s, '%s')''' % (pv[0], uv[0], ad_click_count[0], ad_click_user[0], register_count[0], now.strftime('%Y-%m-%d ') + hour)
-					cursor.execute(sql)
-				else:
-					sql = '''UPDATE `report_hour_total` SET pv = %s, uv = %s, ad_click_count = %s, ad_click_user = %s, register_count = %s 
-					WHERE DATE_FORMAT(report_hour, '%%y-%%m-%%d %%H') = DATE_FORMAT('%s', '%%y-%%m-%%d %%H')''' % (pv[0], uv[0], 
-					ad_click_count[0], ad_click_user[0], register_count[0], now.strftime('%Y-%m-%d ') + hour)
-					cursor.execute(sql)
 		db.commit()
 	except Exception as e:
 		error = '数据操作异常! ERROR : %s' % (e) 

@@ -3,23 +3,64 @@
 from apscheduler.schedulers.blocking import BlockingScheduler
 import util.LogUtil as LogUtil
 import timer.TotalTimer as TotalTimer
-  
-sched = BlockingScheduler() 
-LOG = LogUtil.getLogger()
-TotalTimer.hour()
+import timer.LogViewTimer as LogViewTimer
+import timer.AdClickTimer as AdClickTimer
+import timer.ResourceTimer as ResourceTimer
 
-@sched.scheduled_job('interval', seconds=3) 
-def timed_job(): 
-	LOG.info('每三秒执行一次任务11111111')
-	print('每三秒执行一次任务11111111')
+sched = BlockingScheduler()
+LOG = LogUtil.getLogger()
   
-@sched.scheduled_job('cron', day_of_week='*', hour='15', minute='31', second='30') 
-def scheduled_job(): 
-	LOG.info('准时执行任务')
+@sched.scheduled_job('cron', day='*', hour='*', minute='10') 
+def total_day(): 
+	TotalTimer.day()
+
+@sched.scheduled_job('cron', day='*', hour='*', minute='5') 
+def total_hour(): 
+	TotalTimer.hour()
+
+@sched.scheduled_job('cron', day='*', hour='*', minute='10') 
+def log_view_day(): 
+	LogViewTimer.day()
+
+@sched.scheduled_job('cron', day='*', hour='*', minute='5') 
+def log_view_hour(): 
+	LogViewTimer.hour()
+
+@sched.scheduled_job('cron', day='*', hour='*', minute='10') 
+def ad_click_day(): 
+	AdClickTimer.day()
+
+@sched.scheduled_job('cron', day='*', hour='*', minute='5') 
+def ad_click_hour(): 
+	AdClickTimer.hour()
+
+@sched.scheduled_job('cron', day='*', hour='*', minute='10') 
+def video_day(): 
+	ResourceTimer.day_video()
+
+@sched.scheduled_job('cron', day='*', hour='*', minute='5') 
+def video_hour(): 
+	ResourceTimer.hour_video()
+
+@sched.scheduled_job('cron', day='*', hour='*', minute='10') 
+def download_day(): 
+	ResourceTimer.day_download()
+
+@sched.scheduled_job('cron', day='*', hour='*', minute='5') 
+def download_hour(): 
+	ResourceTimer.hour_download()
+
+@sched.scheduled_job('cron', day='*', hour='*', minute='10') 
+def novel_day(): 
+	ResourceTimer.day_novel()
+
+@sched.scheduled_job('cron', day='*', hour='*', minute='5') 
+def novel_hour(): 
+	ResourceTimer.hour_novel()
 
 try:
-	#sched.start()
 	LOG.info("项目启动完成============>")
+	sched.start()
 except Exception as e:
 	error = '项目启动失败! ERROR : %s' % (e)    
 	LOG.error(error)

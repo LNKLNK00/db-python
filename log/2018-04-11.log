@@ -1,6 +1,0 @@
-2018-04-11 14:28:18,593 INFO DbUtil __init__ Line:17==>数据库操作工具类初始化完成
-2018-04-11 14:28:18,593 INFO DbUtil _query Line:34==>执行查询语句，SQL:select * from videos where id =199
-2018-04-11 14:28:18,593 INFO DbUtil getConnect Line:20==>获取数据库连接
-2018-04-11 14:29:01,505 INFO DbUtil __init__ Line:17 ==> 数据库操作工具类初始化完成
-2018-04-11 14:29:01,505 INFO DbUtil _query Line:34 ==> 执行查询语句，SQL:select * from videos where id =199
-2018-04-11 14:29:01,505 INFO DbUtil getConnect Line:20 ==> 获取数据库连接
