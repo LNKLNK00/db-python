@@ -6,6 +6,7 @@ import timer.TotalTimer as TotalTimer
 import timer.LogViewTimer as LogViewTimer
 import timer.AdClickTimer as AdClickTimer
 import timer.ResourceTimer as ResourceTimer
+import timer.MoveDataTimer as MoveDataTimer
 
 sched = BlockingScheduler()
 LOG = LogUtil.getLogger()
@@ -57,6 +58,10 @@ def novel_day():
 @sched.scheduled_job('cron', day='*', hour='*', minute='5') 
 def novel_hour(): 
 	ResourceTimer.hour_novel()
+
+@sched.scheduled_job('cron', day='2', hour='4', minute='15') 
+def move_log_view(): 
+	MoveDataTimer.run()
 
 try:
 	LOG.info("项目启动完成============>")
