@@ -33,16 +33,11 @@ def run():
 		now_str = cursor.fetchone()[0]
 		now = datetime.datetime.strptime(now_str, '%Y-%m-%d')
 		now = add_months(now,-2)
-		sql = '''SELECT * FROM log_view WHERE DATE_FORMAT(create_time, '%%y-%%m-01') = 
+
+		sql = '''INSERT INTO log_view_old (id, ip_address, customer_id, view_type, view_id, create_time) 
+		SELECT * FROM log_view WHERE DATE_FORMAT(create_time, '%%y-%%m-01') = 
 		DATE_FORMAT('%s', '%%y-%%m-01')''' % (now.strftime('%Y-%m-01'))
 		cursor.execute(sql)
-		rows = cursor.fetchall()
-
-		for row in rows:
-			sql = '''INSERT INTO log_view_old (id, ip_address, customer_id, view_type, view_id, create_time) VALUES 
-			(%s, '%s', %s, %s, %s, '%s')''' % (row[0],row[1],'null' if row[2] == None else row[2],
-			'null' if row[3] == None else row[3], 'null' if row[4] == None else row[4],row[5])
-			cursor.execute(sql)
 
 		sql = '''DELETE FROM log_view WHERE DATE_FORMAT(create_time, '%%y-%%m-01') = 
 		DATE_FORMAT('%s', '%%y-%%m-01')''' % (now.strftime('%Y-%m-01'))
