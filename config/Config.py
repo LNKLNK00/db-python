@@ -1,22 +1,20 @@
 #!/usr/bin/python
 
-import os
 import configparser
- 
-#获取文件的当前路径（绝对路径）
+import os
+
+# 获取文件的当前路径（绝对路径）
 cur_path = os.path.dirname(os.path.realpath(__file__))
- 
- 
-#获取config.ini的路径
-config_path = os.path.join(cur_path,'config.ini')
- 
- 
+
+# 获取config.ini的路径
+config_path = os.path.join(cur_path, 'config.ini')
+
 conf = configparser.ConfigParser()
 conf.read(config_path)
- 
+
 system_profile = conf.get('system', 'system_profile')
 
-profile = os.path.join(cur_path,'config-' + system_profile + '.ini')
+profile = os.path.join(cur_path, 'config-' + system_profile + '.ini')
 conf.read(profile)
 
 mysql_host = conf.get('mysql', 'mysql_host')
